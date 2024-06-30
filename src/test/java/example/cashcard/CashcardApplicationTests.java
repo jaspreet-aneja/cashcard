@@ -94,7 +94,7 @@ class CashcardApplicationTests {
 
 	@Test
 	void shouldReturnASortedPageOfCashCards() {
-		// asc for ascending order 
+//		asc for ascending order 
 		ResponseEntity<String> response = restTemplate.getForEntity("/cashcards?page=0&size=1&sort=amount,desc",
 				String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -105,5 +105,19 @@ class CashcardApplicationTests {
 
 		double amount = documentContext.read("$[0].amount");
 		assertThat(amount).isEqualTo(150.00);
+	}
+
+	@Test
+	void shouldReturnASortedPageOfCashCardsWithNoParametersAndUseDefaultValues() {
+//		Spring provides the default page and size values (they are 0 and 20, respectively)
+		ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+		DocumentContext documentContext = JsonPath.parse(response.getBody());
+		JSONArray page = documentContext.read("$[*]");
+		assertThat(page.size()).isEqualTo(3);
+
+		JSONArray amounts = documentContext.read("$..amount");
+		assertThat(amounts).containsExactly(1.00, 123.45, 150.00);
 	}
 }
