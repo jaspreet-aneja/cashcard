@@ -39,4 +39,9 @@ public class CashCardController {
 		URI locationOfNewlyCreatedCCard = ucb.path("cashcards/{id}").buildAndExpand(createdCCard.id()).toUri();
 		return ResponseEntity.created(locationOfNewlyCreatedCCard).build();
 	}
+	
+	@GetMapping()
+	private ResponseEntity<Iterable<CashCard>> findAll() {
+	   return ResponseEntity.ok(cashCardRepository.findAll());
+	}
 }
