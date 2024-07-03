@@ -25,7 +25,8 @@ class SecurityConfig {
 		 * Also, do not require CSRF security.
 		 */
 
-		http.authorizeHttpRequests(request -> request.requestMatchers("/cashcards/**").authenticated())
+		// enable RBAC: Replace the .authenticated() call with the hasRole(...) call.
+		http.authorizeHttpRequests(request -> request.requestMatchers("/cashcards/**").hasRole("CARD-OWNER"))
 				.httpBasic(Customizer.withDefaults()).csrf(csrf -> csrf.disable());
 		return http.build();
 	}
@@ -56,8 +57,11 @@ class SecurityConfig {
 		 * will use it when needed
 		 */
 
-		UserDetails sarah = userBuilder.username("sarah1").password(passwordEncoder.encode("abc123")).roles().build();
+		UserDetails sarah = userBuilder.username("sarah1").password(passwordEncoder.encode("abc123"))
+				.roles("CARD-OWNER").build();
+		UserDetails hankOwnNoCards = userBuilder.username("hank").password(passwordEncoder.encode("abcdef"))
+				.roles("NON-OWNER").build();
 
-		return new InMemoryUserDetailsManager(sarah);
+		return new InMemoryUserDetailsManager(sarah, hankOwnNoCards);
 	}
 }
