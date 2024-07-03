@@ -1,6 +1,7 @@
 package example.cashcard;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,8 +29,13 @@ public class CashCardController {
 	}
 
 	@GetMapping("/{requestedId}")
-	private ResponseEntity<CashCard> findById(@PathVariable("requestedId") Long requestedId) {
-		Optional<CashCard> cashCardOptional = cashCardRepository.findById(requestedId);
+	private ResponseEntity<CashCard> findById(@PathVariable("requestedId") Long requestedId, Principal principal) {
+//		Optional<CashCard> cashCardOptional = cashCardRepository.findById(requestedId);
+
+//		Principal is available for us to use in our Controller. The Principal holds our user's authenticated, authorized information
+//		Note that principal.getName() will return the username provided from Basic Auth.
+		Optional<CashCard> cashCardOptional = Optional
+				.ofNullable(cashCardRepository.findByIdAndOwner(requestedId, principal.getName()));
 
 		if (cashCardOptional.isPresent()) {
 			return ResponseEntity.ok(cashCardOptional.get());
@@ -46,9 +52,12 @@ public class CashCardController {
 	}
 
 	@GetMapping
-	private ResponseEntity<List<CashCard>> findAll(Pageable pageable) {
-		Page<CashCard> page = cashCardRepository.findAll(PageRequest.of(pageable.getPageNumber(),
-				pageable.getPageSize(), pageable.getSortOr(Sort.by(Sort.Direction.ASC, "amount"))));
+	private ResponseEntity<List<CashCard>> findAll(Pageable pageable, Principal principal) {
+//		Page<CashCard> page = cashCardRepository.findAll(PageRequest.of(pageable.getPageNumber(),
+//				pageable.getPageSize(), pageable.getSortOr(Sort.by(Sort.Direction.ASC, "amount"))));
+		Page<CashCard> page = cashCardRepository.findByOwner(principal.getName(),
+				PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+						pageable.getSortOr(Sort.by(Sort.Direction.ASC, "amount"))));
 
 		return ResponseEntity.ok(page.getContent());
 	}
