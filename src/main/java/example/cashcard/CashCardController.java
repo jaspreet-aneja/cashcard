@@ -45,8 +45,9 @@ public class CashCardController {
 	}
 
 	@PostMapping
-	private ResponseEntity<Void> createCashCard(@RequestBody CashCard newCashCard, UriComponentsBuilder ucb) {
-		CashCard createdCCard = cashCardRepository.save(newCashCard);
+	private ResponseEntity<Void> createCashCard(@RequestBody CashCard newCashCard, UriComponentsBuilder ucb, Principal principal) {
+		CashCard cashCardWithOwner = new CashCard(null, newCashCard.amount(), principal.getName());
+		CashCard createdCCard = cashCardRepository.save(cashCardWithOwner);
 		URI locationOfNewlyCreatedCCard = ucb.path("cashcards/{id}").buildAndExpand(createdCCard.id()).toUri();
 		return ResponseEntity.created(locationOfNewlyCreatedCCard).build();
 	}
