@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,7 +46,8 @@ public class CashCardController {
 	}
 
 	@PostMapping
-	private ResponseEntity<Void> createCashCard(@RequestBody CashCard newCashCard, UriComponentsBuilder ucb, Principal principal) {
+	private ResponseEntity<Void> createCashCard(@RequestBody CashCard newCashCard, UriComponentsBuilder ucb,
+			Principal principal) {
 		CashCard cashCardWithOwner = new CashCard(null, newCashCard.amount(), principal.getName());
 		CashCard createdCCard = cashCardRepository.save(cashCardWithOwner);
 		URI locationOfNewlyCreatedCCard = ucb.path("cashcards/{id}").buildAndExpand(createdCCard.id()).toUri();
@@ -62,4 +64,20 @@ public class CashCardController {
 
 		return ResponseEntity.ok(page.getContent());
 	}
+
+	@PutMapping("/{requestedId}")
+	private ResponseEntity<Void> putCashCard(@PathVariable("requestedId") Long requestedId,
+			@RequestBody CashCard cashCardUpdate, Principal principal) {
+		CashCard cashCard = cashCardRepository.findByIdAndOwner(requestedId, principal.getName());
+		if (cashCard != null) {
+
+			CashCard updatedCCard = new CashCard(cashCard.id(), cashCardUpdate.amount(), principal.getName());
+			cashCardRepository.save(updatedCCard);
+			// just return 204 NO CONTENT for now.
+			return ResponseEntity.noContent().build();
+		}
+
+		return ResponseEntity.notFound().build();
+	}
+
 }
