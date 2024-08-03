@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -80,4 +81,13 @@ public class CashCardController {
 		return ResponseEntity.notFound().build();
 	}
 
+	@DeleteMapping("/{id}")
+	private ResponseEntity<Void> deleteCashCard(@PathVariable("id") Long id, Principal principal) {
+		if (!cashCardRepository.existsByIdAndOwner(id, principal.getName())) {
+	        return ResponseEntity.notFound().build();
+	    }
+		
+		cashCardRepository.deleteById(id);
+		return ResponseEntity.noContent().build();
+	}
 }
